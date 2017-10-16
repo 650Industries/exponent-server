@@ -86,6 +86,6 @@
     "semver": "^5.0.1",
     "source-map-support": "^0.4.1",
     "untildify": "^3.0.2",
-    "xdl": "44.0.2"
+    "xdl": "45.0.0"
   }
 }
