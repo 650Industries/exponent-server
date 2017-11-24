@@ -38,8 +38,8 @@ export default class IOSBuilder extends BaseBuilder {
       args: {
         username,
         remoteFullPackageName: experienceName,
-        bundleIdentifierIOS: bundleIdentifier,
-      },
+        bundleIdentifierIOS: bundleIdentifier
+      }
     } = await Exp.getPublishInfoAsync(this.projectDir);
 
     if (!bundleIdentifier) {
@@ -77,7 +77,7 @@ export default class IOSBuilder extends BaseBuilder {
       username,
       experienceName,
       bundleIdentifier,
-      platform: 'ios',
+      platform: 'ios'
     };
 
     log('Checking for existing Apple credentials...');
@@ -118,7 +118,9 @@ export default class IOSBuilder extends BaseBuilder {
     } catch (e) {
       throw new XDLError(
         ErrorCode.CREDENTIAL_ERROR,
-        `It seems like we can't create an app on the Apple developer center with this app id: ${bundleIdentifier}. Please change your bundle identifier to something else.`
+        `It seems like we can't create an app on the Apple developer center with this app id: ${
+          bundleIdentifier
+        }. Please change your bundle identifier to something else.`
       );
     }
 
@@ -131,6 +133,12 @@ export default class IOSBuilder extends BaseBuilder {
   }
 
   async askForAppleId(credentialMetadata: CredentialMetadata) {
+    const environmentAnswers = {
+      appleId: process.env.EXP_APPLE_ID,
+      password: process.env.EXP_APPLE_PASSWORD,
+      teamId: process.env.EXP_APPLE_TEAM_ID
+    };
+
     // ask for creds
     console.log('');
     console.log(
@@ -142,27 +150,55 @@ export default class IOSBuilder extends BaseBuilder {
         name: 'appleId',
         message: `What's your Apple ID?`,
         validate: val => val !== '',
+        when: () => {
+          // Allow the user to specify this value via an environment variable.
+          if (environmentAnswers.appleId) {
+            log('EXP_APPLE_ID is set in the environment, not going to ask for value.');
+            return false;
+          }
+          delete environmentAnswers.appleId;
+          return true;
+        }
       },
       {
         type: 'password',
         name: 'password',
         message: `Password?`,
         validate: val => val !== '',
+        when: () => {
+          // Allow the user to specify this value via an environment variable.
+          if (environmentAnswers.password) {
+            log('EXP_APPLE_PASSWORD is set in the environment, not going to ask for value.');
+            return false;
+          }
+          delete environmentAnswers.password;
+          return true;
+        }
       },
       {
         type: 'input',
         name: 'teamId',
         message: `What is your Apple Team ID (you can find that on this page: https://developer.apple.com/account/#/membership)?`,
         validate: val => val !== '',
-      },
+        when: () => {
+          // Allow the user to specify this value via an environment variable.
+          if (environmentAnswers.teamId) {
+            log('EXP_APPLE_TEAM_ID is set in the environment, not going to ask for value.');
+            return false;
+          }
+          delete environmentAnswers.teamId;
+          return true;
+        }
+      }
     ];
 
-    const answers = await inquirer.prompt(questions);
+    let answers = await inquirer.prompt(questions);
+    answers = Object.assign(answers, environmentAnswers);
 
     const credentials: IOSCredentials = {
       appleId: answers.appleId,
       password: answers.password,
-      teamId: answers.teamId,
+      teamId: answers.teamId
     };
 
     log('Validating Apple credentials...');
@@ -176,6 +212,17 @@ export default class IOSBuilder extends BaseBuilder {
   }
 
   async askForCerts(credentialMetadata: CredentialMetadata) {
+    const environmentAnswers = {
+      pathToP12: process.env.EXP_DIST_CERTIFICATE_PATH,
+      certPassword: process.env.EXP_DIST_CERTIFICATE_PASSWORD,
+      manageCertificates: true
+    };
+
+    // If we have values set for the certs then assume we don't want these to be managed.
+    if (environmentAnswers.pathToP12 || environmentAnswers.certPassword) {
+      environmentAnswers.manageCertificates = false;
+    }
+
     // ask about certs
     console.log(``);
 
@@ -186,42 +233,72 @@ export default class IOSBuilder extends BaseBuilder {
         message: `Do you already have a distribution certificate you'd like us to use,\nor do you want us to manage your certificates for you?`,
         choices: [
           { name: 'Let Expo handle the process!', value: true },
-          { name: 'I want to upload my own certificate!', value: false },
+          { name: 'I want to upload my own certificate!', value: false }
         ],
+        when: () => {
+          // Allow the user to specify this value via an environment variable.
+          if (!environmentAnswers.manageCertificates) {
+            log(
+              'EXP_DIST_CERTIFICATE_PATH and/or EXP_DIST_CERTIFICATE_PASSWORD is set in the environment, not going to ask if you want us to manage your certificates.'
+            );
+            return false;
+          }
+          delete environmentAnswers.manageCertificates;
+          return true;
+        }
       },
       {
         type: 'input',
         name: 'pathToP12',
         message: 'Path to P12 file:',
-        validate: async p12Path => {
-          try {
-            const stats = await fs.stat.promise(p12Path);
-            return stats.isFile();
-          } catch (e) {
-            // file does not exist
-            console.log('\nFile does not exist.');
+        validate: val => {
+          return this.validateCertificatePath(val);
+        },
+        filter: val => {
+          return this.cleanCertificatePath(val);
+        },
+        when: async answers => {
+          // Allow the user to specify this value via an environment variable - but ignore both if we've been told to manage the certificates.
+          if (answers.manageCertificates || environmentAnswers.manageCertificates) {
+            delete environmentAnswers.pathToP12;
+            return false;
+          } else if (environmentAnswers.pathToP12) {
+            if (!await this.validateCertificatePath(environmentAnswers.pathToP12)) {
+              log('EXP_DIST_CERTIFICATE_PATH is set in the environment to an invalid value.');
+              delete environmentAnswers.pathToP12;
+              return true;
+            }
+            log('EXP_DIST_CERTIFICATE_PATH is set in the environment, not going to ask for value.');
             return false;
           }
-        },
-        filter: p12Path => {
-          p12Path = untildify(p12Path);
-          if (!path.isAbsolute(p12Path)) {
-            p12Path = path.resolve(p12Path);
-          }
-          return p12Path;
-        },
-        when: answers => !answers.manageCertificates,
+          delete environmentAnswers.pathToP12;
+          return true;
+        }
       },
       {
         type: 'password',
         name: 'certPassword',
         message: 'Certificate P12 password:',
         validate: password => password.length > 0,
-        when: answers => !answers.manageCertificates,
-      },
+        when: answers => {
+          // Allow the user to specify this value via an environment variable - but ignore both if we've been told to manage the certificates.
+          if (answers.manageCertificates || environmentAnswers.manageCertificates) {
+            delete environmentAnswers.certPassword;
+            return false;
+          } else if (environmentAnswers.certPassword) {
+            log(
+              'EXP_DIST_CERTIFICATE_PASSWORD is set in the environment, not going to ask for value.'
+            );
+            return false;
+          }
+          delete environmentAnswers.certPassword;
+          return true;
+        }
+      }
     ];
 
-    const answers = await inquirer.prompt(questions);
+    let answers = await inquirer.prompt(questions);
+    answers = Object.assign(answers, environmentAnswers);
 
     if (answers.manageCertificates) {
       // Attempt to fetch new certificates
@@ -233,7 +310,7 @@ export default class IOSBuilder extends BaseBuilder {
 
       const credentials: IOSCredentials = {
         certP12: p12Data.toString('base64'),
-        certPassword: answers.certPassword,
+        certPassword: answers.certPassword
       };
 
       log('Validating distribution certificate...');
@@ -249,8 +326,18 @@ export default class IOSBuilder extends BaseBuilder {
   }
 
   async askForPushCerts(credentialMetadata: CredentialMetadata) {
-    // ask about certs
+    const environmentAnswers = {
+      pathToP12: process.env.EXP_PUSH_CERTIFICATE_PATH,
+      certPassword: process.env.EXP_PUSH_CERTIFICATE_PASSWORD,
+      managePushCertificates: true
+    };
 
+    // If we have values set for the certs then assume we don't want these to be managed.
+    if (environmentAnswers.pathToP12 || environmentAnswers.certPassword) {
+      environmentAnswers.managePushCertificates = false;
+    }
+
+    // ask about certs
     const questions = [
       {
         type: 'rawlist',
@@ -258,45 +345,71 @@ export default class IOSBuilder extends BaseBuilder {
         message: `Do you already have a push notification certificate you'd like us to use,\nor do you want us to manage your push certificates for you?`,
         choices: [
           { name: 'Let Expo handle the process!', value: true },
-          { name: 'I want to upload my own certificate!', value: false },
+          { name: 'I want to upload my own certificate!', value: false }
         ],
+        when: () => {
+          // Allow the user to specify this value via an environment variable.
+          if (!environmentAnswers.manageCertificates) {
+            log(
+              'EXP_PUSH_CERTIFICATE_PATH and/or EXP_PUSH_CERTIFICATE_PASSWORD is set in the environment, not going to ask if you want us to manage your certificates.'
+            );
+            return false;
+          }
+          delete environmentAnswers.manageCertificates;
+          return true;
+        }
       },
       {
         type: 'input',
         name: 'pathToP12',
         message: 'Path to P12 file:',
-        validate: async p12Path => {
-          try {
-            const stats = await fs.stat.promise(p12Path);
-            return stats.isFile();
-          } catch (e) {
-            // file does not exist
-            console.log('\nFile does not exist.');
+        validate: val => {
+          return this.validateCertificatePath(val);
+        },
+        filter: val => {
+          return this.cleanCertificatePath(val);
+        },
+        when: async answers => {
+          // Allow the user to specify this value via an environment variable - but ignore both if we've been told to manage the certificates.
+          if (answers.manageCertificates || environmentAnswers.manageCertificates) {
+            delete environmentAnswers.pathToP12;
+            return false;
+          } else if (environmentAnswers.pathToP12) {
+            if (!await this.validateCertificatePath(environmentAnswers.pathToP12)) {
+              log('EXP_PUSH_CERTIFICATE_PATH is set in the environment to an invalid value.');
+              delete environmentAnswers.pathToP12;
+              return true;
+            }
+            log('EXP_PUSH_CERTIFICATE_PATH is set in the environment, not going to ask for value.');
             return false;
           }
-        },
-        filter: p12Path => {
-          p12Path = untildify(p12Path);
-          if (!path.isAbsolute(p12Path)) {
-            p12Path = path.resolve(p12Path);
-          }
-          return p12Path;
-        },
-        when: answers => !answers.managePushCertificates,
+          delete environmentAnswers.pathToP12;
+          return true;
+        }
       },
       {
         type: 'password',
-        name: 'pushPassword',
+        name: 'certPassword',
         message: 'Push certificate P12 password (empty is OK):',
-        when: answers => !answers.managePushCertificates,
-      },
+        when: answers => {
+          // Allow the user to specify this value via an environment variable - but ignore both if we've been told to manage the certificates.
+          if (answers.manageCertificates || environmentAnswers.manageCertificates) {
+            delete environmentAnswers.certPassword;
+            return false;
+          } else if (environmentAnswers.certPassword) {
+            log(
+              'EXP_PUSH_CERTIFICATE_PASSWORD is set in the environment, not going to ask for value.'
+            );
+            return false;
+          }
+          delete environmentAnswers.certPassword;
+          return true;
+        }
+      }
     ];
 
-    const answers: {
-      managePushCertificates: boolean,
-      pathToP12?: string,
-      pushPassword?: string,
-    } = await inquirer.prompt(questions);
+    let answers = await inquirer.prompt(questions);
+    answers = Object.assign(answers, environmentAnswers);
 
     if (answers.managePushCertificates) {
       // Attempt to fetch new certificates
@@ -308,7 +421,7 @@ export default class IOSBuilder extends BaseBuilder {
 
       const credentials: IOSCredentials = {
         pushP12: p12Data.toString('base64'),
-        pushPassword: answers.pushPassword,
+        pushPassword: answers.certPassword
       };
 
       log('Validating push certificate...');
@@ -321,5 +434,25 @@ export default class IOSBuilder extends BaseBuilder {
       await Credentials.updateCredentialsForPlatform('ios', credentials, credentialMetadata);
     }
     log('Push certificate setup complete.');
+  }
+
+  // validators
+  async validateCertificatePath(p12Path) {
+    try {
+      const stats = await fs.stat.promise(p12Path);
+      return stats.isFile();
+    } catch (e) {
+      // file does not exist
+      console.log('\nFile does not exist.');
+      return false;
+    }
+  }
+
+  cleanCertificatePath(p12Path) {
+    p12Path = untildify(p12Path);
+    if (!path.isAbsolute(p12Path)) {
+      p12Path = path.resolve(p12Path);
+    }
+    return p12Path;
   }
 }

@@ -28,13 +28,13 @@ export default class AndroidBuilder extends BaseBuilder {
 
   async _clearCredentials() {
     const {
-      args: { username, remotePackageName, remoteFullPackageName: experienceName },
+      args: { username, remotePackageName, remoteFullPackageName: experienceName }
     } = await Exp.getPublishInfoAsync(this.projectDir);
 
     const credentialMetadata = {
       username,
       experienceName,
-      platform: 'android',
+      platform: 'android'
     };
 
     const localKeystorePath = path.resolve(`${remotePackageName}.jks`);
@@ -65,8 +65,8 @@ export default class AndroidBuilder extends BaseBuilder {
       {
         type: 'confirm',
         name: 'confirm',
-        message: 'Permanently delete the Android build credentials from our servers?',
-      },
+        message: 'Permanently delete the Android build credentials from our servers?'
+      }
     ];
 
     const answers = await inquirer.prompt(questions);
@@ -78,13 +78,13 @@ export default class AndroidBuilder extends BaseBuilder {
 
   async collectAndValidateCredentials() {
     const {
-      args: { username, remoteFullPackageName: experienceName },
+      args: { username, remoteFullPackageName: experienceName }
     } = await Exp.getPublishInfoAsync(this.projectDir);
 
     const credentialMetadata = {
       username,
       experienceName,
-      platform: 'android',
+      platform: 'android'
     };
 
     const credentials: ?AndroidCredentials = await Credentials.credentialsExistForPlatformAsync(
@@ -92,6 +92,23 @@ export default class AndroidBuilder extends BaseBuilder {
     );
 
     if (this.options.clearCredentials || !credentials) {
+      const environmentAnswers = {
+        keystorePath: process.env.EXP_ANDROID_KEYSTORE_PATH,
+        keystoreAlias: process.env.EXP_ANDROID_KEYSTORE_ALIAS,
+        keystorePassword: process.env.EXP_ANDROID_STORE_PASSWORD,
+        keyPassword: process.env.EXP_ANDROID_KEY_PASSWORD,
+        uploadKeystore: false
+      };
+
+      if (
+        environmentAnswers.keystorePath ||
+        environmentAnswers.keystoreAlias ||
+        environmentAnswers.keystorePassword ||
+        environmentAnswers.keyPassword
+      ) {
+        environmentAnswers.uploadKeystore = true;
+      }
+
       console.log('');
       const questions = [
         {
@@ -100,8 +117,19 @@ export default class AndroidBuilder extends BaseBuilder {
           message: `Would you like to upload a keystore or have us generate one for you?\nIf you don't know what this means, let us handle it! :)\n`,
           choices: [
             { name: 'Let Expo handle the process!', value: false },
-            { name: 'I want to upload my own keystore!', value: true },
+            { name: 'I want to upload my own keystore!', value: true }
           ],
+          when: () => {
+            // Allow the user to specify this value via an environment variable.
+            if (environmentAnswers.uploadKeystore) {
+              log(
+                'EXP_ANDROID_KEYSTORE_PATH and/or EXP_ANDROID_KEYSTORE_ALIAS and/or EXP_ANDROID_STORE_PASSWORD and/or EXP_ANDROID_KEY_PASSWORD is set in the environment, not going to ask if you want us to manage your certificates.'
+              );
+              return false;
+            }
+            delete environmentAnswers.uploadKeystore;
+            return true;
+          }
         },
         {
           type: 'input',
@@ -124,21 +152,60 @@ export default class AndroidBuilder extends BaseBuilder {
             }
             return keystorePath;
           },
-          when: answers => answers.uploadKeystore,
+          when: answers => {
+            // Allow the user to specify this value via an environment variable.
+            if (!answers.uploadKeystore && !environmentAnswers.uploadKeystore) {
+              delete environmentAnswers.keystorePath;
+              return false;
+            } else if (environmentAnswers.keystorePath) {
+              log(
+                'EXP_ANDROID_KEYSTORE_PATH is set in the environment, not going to ask for value.'
+              );
+              return false;
+            }
+            delete environmentAnswers.keystorePath;
+            return true;
+          }
         },
         {
           type: 'input',
           name: 'keystoreAlias',
           message: `Keystore Alias:`,
           validate: val => val !== '',
-          when: answers => answers.uploadKeystore,
+          when: answers => {
+            // Allow the user to specify this value via an environment variable.
+            if (!answers.uploadKeystore && !environmentAnswers.uploadKeystore) {
+              delete environmentAnswers.keystoreAlias;
+              return false;
+            } else if (environmentAnswers.keystoreAlias) {
+              log(
+                'EXP_ANDROID_KEYSTORE_ALIAS is set in the environment, not going to ask for value.'
+              );
+              return false;
+            }
+            delete environmentAnswers.keystoreAlias;
+            return true;
+          }
         },
         {
           type: 'password',
           name: 'keystorePassword',
           message: `Keystore Password:`,
           validate: val => val !== '',
-          when: answers => answers.uploadKeystore,
+          when: answers => {
+            // Allow the user to specify this value via an environment variable.
+            if (!answers.uploadKeystore && !environmentAnswers.uploadKeystore) {
+              delete environmentAnswers.keystorePassword;
+              return false;
+            } else if (environmentAnswers.keystorePassword) {
+              log(
+                'EXP_ANDROID_STORE_PASSWORD is set in the environment, not going to ask for value.'
+              );
+              return false;
+            }
+            delete environmentAnswers.keystorePassword;
+            return true;
+          }
         },
         {
           type: 'password',
@@ -151,11 +218,25 @@ export default class AndroidBuilder extends BaseBuilder {
             // Todo validate keystore passwords
             return true;
           },
-          when: answers => answers.uploadKeystore,
-        },
+          when: answers => {
+            // Allow the user to specify this value via an environment variable.
+            if (!answers.uploadKeystore && !environmentAnswers.uploadKeystore) {
+              delete environmentAnswers.keyPassword;
+              return false;
+            } else if (environmentAnswers.keyPassword) {
+              log(
+                'EXP_ANDROID_KEY_PASSWORD is set in the environment, not going to ask for value.'
+              );
+              return false;
+            }
+            delete environmentAnswers.keyPassword;
+            return true;
+          }
+        }
       ];
 
-      const answers = await inquirer.prompt(questions);
+      let answers = await inquirer.prompt(questions);
+      answers = Object.assign(answers, environmentAnswers);
 
       if (!answers.uploadKeystore) {
         if (this.options.clearCredentials) {
@@ -172,7 +253,7 @@ export default class AndroidBuilder extends BaseBuilder {
           keystore: keystoreData.toString('base64'),
           keystoreAlias,
           keystorePassword,
-          keyPassword,
+          keyPassword
         };
         await Credentials.updateCredentialsForPlatform('android', credentials, credentialMetadata);
       }
