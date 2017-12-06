@@ -31,7 +31,7 @@ export async function action(projectDir: string, options: Options = {}) {
   if (status !== 'running') {
     log('Unable to find an existing exp instance for this directory, starting a new one...');
     installExitHooks(projectDir);
-    await Project.startAsync(projectDir, {}, !options.quiet);
+    await Project.startAsync(projectDir, {reset: true}, !options.quiet);
     startedOurOwn = true;
   }
 
