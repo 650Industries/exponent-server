@@ -1,4 +1,5 @@
 import { Diagnostics } from 'xdl';
+import { print as envinfoPrint } from 'envinfo';
 
 import simpleSpinner from '@expo/simple-spinner';
 
@@ -11,6 +12,8 @@ async function action(options) {
     uploadLogs: true,
   });
   simpleSpinner.stop();
+
+  envinfoPrint();
 
   log(`Please share this URL with the Expo team: ${url}.`);
   log('You can join our slack here: https://slack.expo.io/.');
