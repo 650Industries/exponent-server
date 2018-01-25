@@ -7,6 +7,8 @@ import log from '../log';
 
 async function action(options) {
   log('Generating diagnostics report...');
+  log('You can join our slack here: https://slack.expo.io/.');
+
   simpleSpinner.start();
   let { url } = await Diagnostics.getDeviceInfoAsync({
     uploadLogs: true,
@@ -15,8 +17,7 @@ async function action(options) {
 
   envinfoPrint();
 
-  log(`Please share this URL with the Expo team: ${url}.`);
-  log('You can join our slack here: https://slack.expo.io/.');
+  console.log(`\x1b[4mDiagnostics report:\x1b[0m\n  ${url}\n`);
   log.raw(url);
 }
 
