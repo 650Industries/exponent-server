@@ -57,7 +57,18 @@ function respectProgressBars(commitLogs) {
 }
 
 function getPrefix(chalkColor) {
-  return chalkColor('[') + chalk.gray('exp') + chalkColor(']');
+  const timestamp = new Date().toLocaleTimeString().padStart(11, '0');
+  const leftBracket = chalkColor('[');
+  const rightBracket = chalkColor(']');
+  return (
+    leftBracket +
+    chalk.gray('exp') +
+    rightBracket +
+    ' ' +
+    leftBracket +
+    chalk.gray(timestamp) +
+    rightBracket
+  );
 }
 
 function withPrefixAndTextColor(args, chalkColor = chalk.gray) {
