@@ -1,5 +1,7 @@
 import chalk from 'chalk';
 
+const maxTimestampLength = new Date('12-31-1970 23:59:59').toLocaleTimeString().length;
+
 let _bundleProgressBar;
 
 let _printNewLineBeforeNextLog = false;
@@ -57,7 +59,7 @@ function respectProgressBars(commitLogs) {
 }
 
 function getPrefix(chalkColor) {
-  const timestamp = new Date().toLocaleTimeString().padStart(11, '0');
+  const timestamp = new Date().toLocaleTimeString().padStart(maxTimestampLength);
   const leftBracket = chalkColor('[');
   const rightBracket = chalkColor(']');
   return (
