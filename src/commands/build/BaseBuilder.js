@@ -2,12 +2,13 @@
  * @flow
  */
 
-import { Project, ProjectUtils, Api } from 'xdl';
+import { Project, ProjectUtils } from 'xdl';
 import inquirer from 'inquirer';
-
-import log from '../../log';
 import chalk from 'chalk';
 import fp from 'lodash/fp';
+import simpleSpinner from '@expo/simple-spinner';
+
+import log from '../../log';
 import { action as publishAction } from '../publish';
 
 import BuildError from './BuildError';
@@ -26,7 +27,7 @@ type BuilderOptions = {
 export default class BaseBuilder {
   projectDir: string = '';
   options: BuilderOptions = {
-    wait: false,
+    wait: true,
     clearCredentials: false,
     releaseChannel: 'default',
     publish: false,
@@ -176,14 +177,14 @@ ${buildStatus.id}
 
   async wait(buildId, { timeout = 1200, interval = 60 } = {}) {
     let time = new Date().getTime();
-    log(`Waiting for build ${buildId} to complete, checking status in ${interval}s ...`);
+    log(`Waiting for build to complete. You can press Ctrl+C to exit.`);
     await sleep(secondsToMilliseconds(interval));
     const endTime = time + secondsToMilliseconds(timeout);
     while (time <= endTime) {
       const res = await Project.buildAsync(this.projectDir, { current: false, mode: 'status' });
       const job = fp.compose(
         fp.head,
-        fp.filter(job => job.id === buildId),
+        fp.filter(job => buildId && job.id === buildId),
         fp.getOr([], 'jobs')
       )(res);
       switch (job.status) {
@@ -192,7 +193,6 @@ ${buildStatus.id}
       case 'pending':
       case 'started':
       case 'in-progress':
-        log(`Standalone app is still building, checking again in ${interval}s ...`);
         break;
       case 'errored':
         throw new BuildError(`Standalone build failed!`);
@@ -224,23 +224,24 @@ ${buildStatus.id}
     }
 
     // call out to build api here with url
-    const buildResp = await Project.buildAsync(this.projectDir, opts);
+    const { id: buildId } = await Project.buildAsync(this.projectDir, opts);
+
+    log('Build started, it may take a few minutes to complete.');
+    
+    if (buildId) {
+      log(
+        `You can monitor the build at\n\n ${chalk.underline(
+          constructBuildLogsUrl(buildId)
+        )}\n`
+      );
+    }
 
     if (this.options.wait) {
-      const { id } = buildResp;
-      const completedJob = await this.wait(id);
+      simpleSpinner.start();
+      const completedJob = await this.wait(buildId);
+      simpleSpinner.stop();
       log(`${chalk.green('Successfully built standalone app:')} ${chalk.underline(completedJob.artifacts.url)}`);
-    } else {
-      log('Build started, it may take a few minutes to complete.');
-
-      if (buildResp.id) {
-        log(
-          `You can monitor the build at\n\n ${chalk.underline(
-            constructBuildLogsUrl(buildResp.id)
-          )}\n`
-        );
-      }
-
+    } else {  
       log('Alternatively, run `exp build:status` to monitor it from the command line.');
     }
   }
