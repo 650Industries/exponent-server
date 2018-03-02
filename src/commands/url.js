@@ -15,9 +15,9 @@ const logArtifactUrl = (platform) => async (projectDir, options) => {
     fp.getOr([], 'jobs')
   )(res);
   if (url) {
-    console.log(url);
+    log.nested(url);
   } else {
-    throw new Error(`No ${platform} binary file found.`);
+    throw new Error(`No ${platform} binary file found. Use "exp build:${platform}" to create one.`);
   }
 }
 
@@ -49,7 +49,6 @@ export default program => {
 
   program
     .command('url:ipa [project-dir]')
-    .alias('ui')
     .description('Displays the standalone iOS binary URL you can use to download your app binary')
     .allowOffline()
     .allowNonInteractive()
@@ -57,7 +56,6 @@ export default program => {
 
   program
     .command('url:apk [project-dir]')
-    .alias('ua')
     .description('Displays the standalone Android binary URL you can use to download your app binary')
     .allowOffline()
     .allowNonInteractive()
