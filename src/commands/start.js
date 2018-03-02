@@ -44,7 +44,7 @@ async function action(projectDir, options) {
 
   let { exp } = await ProjectUtils.readConfigJsonAsync(projectDir);
 
-  if (!exp.isDetached) {
+  if (!exp.isDetached || options.alwaysShowQrcode) {
     log('You can scan this QR code:');
     log.newLine();
     urlOpts.printQRCode(url);
@@ -76,6 +76,7 @@ export default (program: any) => {
     .description('Starts or restarts a local server for your app and gives you a URL to it')
     .option('-s, --send-to [dest]', 'A phone number or e-mail address to send a link to')
     .option('-c, --clear', 'Clear the React Native packager cache')
+    .option('--always-show-qrcode', 'Show QRCode even if your project is detached')
     .urlOpts()
     .allowNonInteractive()
     .allowOffline()
