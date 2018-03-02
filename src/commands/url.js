@@ -1,9 +1,25 @@
 import chalk from 'chalk';
+import fp from 'lodash/fp';
 
-import { UrlUtils } from 'xdl';
+import { UrlUtils, Project } from 'xdl';
 
 import log from '../log';
 import urlOpts from '../urlOpts';
+
+const logArtifactUrl = (platform) => async (projectDir, options) => {
+  const res = await Project.buildAsync(projectDir, { current: false, mode: 'status' });
+  const url = fp.compose(
+    fp.get(['artifacts', 'url']),
+    fp.head,
+    fp.filter(job => platform && job.platform === platform),
+    fp.getOr([], 'jobs')
+  )(res);
+  if (url) {
+    console.log(url);
+  } else {
+    throw new Error(`No ${platform} binary file found.`);
+  }
+}
 
 async function action(projectDir, options) {
   await urlOpts.optsAsync(projectDir, options);
@@ -30,4 +46,21 @@ export default program => {
     .allowOffline()
     .allowNonInteractive()
     .asyncActionProjectDir(action);
+
+  program
+    .command('url:ipa [project-dir]')
+    .alias('ui')
+    .description('Displays the standalone iOS binary URL you can use to download your app binary')
+    .allowOffline()
+    .allowNonInteractive()
+    .asyncActionProjectDir(logArtifactUrl('ios'), true);
+
+  program
+    .command('url:apk [project-dir]')
+    .alias('ua')
+    .description('Displays the standalone Android binary URL you can use to download your app binary')
+    .allowOffline()
+    .allowNonInteractive()
+    .asyncActionProjectDir(logArtifactUrl('android'), true);
+
 };
