@@ -50,14 +50,12 @@ export default program => {
   program
     .command('url:ipa [project-dir]')
     .description('Displays the standalone iOS binary URL you can use to download your app binary')
-    .allowOffline()
     .allowNonInteractive()
     .asyncActionProjectDir(logArtifactUrl('ios'), true);
 
   program
     .command('url:apk [project-dir]')
     .description('Displays the standalone Android binary URL you can use to download your app binary')
-    .allowOffline()
     .allowNonInteractive()
     .asyncActionProjectDir(logArtifactUrl('android'), true);
 
