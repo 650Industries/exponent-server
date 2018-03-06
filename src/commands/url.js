@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import fp from 'lodash/fp';
 
-import { UrlUtils, Project } from 'xdl';
+import { Project, UrlUtils } from 'xdl';
 
 import CommandError from '../CommandError';
 import log from '../log';
