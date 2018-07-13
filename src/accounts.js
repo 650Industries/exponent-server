@@ -59,7 +59,7 @@ export async function loginOrRegisterIfLoggedOut() {
 
 export async function login(options: CommandOptions) {
   const user = await UserManager.getCurrentUserAsync();
-  if (!options.nonInteractive) {
+  if (!options.parent.nonInteractive) {
     if (user) {
       const question = [
         {
