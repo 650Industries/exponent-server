@@ -6,7 +6,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import untildify from 'untildify';
 import { Exp, Credentials } from 'xdl';
-import chalk from 'chalk';
+import tc from 'turbocolor';
 import log from '../../log';
 
 import BaseBuilder from './BaseBuilder';
@@ -38,7 +38,7 @@ export default class AndroidBuilder extends BaseBuilder {
     };
 
     log.warn(
-      `Clearing your Android build credentials from our build servers is a ${chalk.red(
+      `Clearing your Android build credentials from our build servers is a ${tc.red(
         'PERMANENT and IRREVERSIBLE action.'
       )}`
     );

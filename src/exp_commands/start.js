@@ -4,7 +4,7 @@
 
 import { ProjectUtils, ProjectSettings, Project } from 'xdl';
 
-import chalk from 'chalk';
+import tc from 'turbocolor';
 import path from 'path';
 
 import log from '../log';
@@ -29,7 +29,7 @@ async function action(projectDir, options) {
 
   await urlOpts.optsAsync(projectDir, options);
 
-  log(chalk.gray('Using project at', projectDir));
+  log(tc.gray(`Using project at ${projectDir}`));
 
   let root = path.resolve(projectDir);
   let startOpts = {};
@@ -54,7 +54,7 @@ async function action(projectDir, options) {
     urlOpts.printQRCode(url);
   }
 
-  log('Your URL is: ' + chalk.underline(url));
+  log('Your URL is: ' + tc.underline(url));
 
   if (!exp.isDetached) {
     await printRunInstructionsAsync();
@@ -77,7 +77,7 @@ async function action(projectDir, options) {
 
   await urlOpts.handleMobileOptsAsync(projectDir, options);
 
-  log(chalk.green('Logs for your project will appear below. Press Ctrl+C to exit.'));
+  log(tc.green('Logs for your project will appear below. Press Ctrl+C to exit.'));
 }
 
 export default (program: any) => {

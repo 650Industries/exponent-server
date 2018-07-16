@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import tc from 'turbocolor';
 
 let _bundleProgressBar;
 
@@ -56,16 +56,16 @@ function respectProgressBars(commitLogs) {
   }
 }
 
-function getPrefix(chalkColor) {
-  return chalkColor(`[${new Date().toTimeString().slice(0, 8)}]`);
+function getPrefix(color) {
+  return color(`[${new Date().toTimeString().slice(0, 8)}]`);
 }
 
-function withPrefixAndTextColor(args, chalkColor = chalk.gray) {
-  return [getPrefix(chalkColor), ...args.map(arg => chalkColor(arg))];
+function withPrefixAndTextColor(args, color = tc.gray) {
+  return [getPrefix(color), ...args.map(arg => color(arg))];
 }
 
-function withPrefix(args, chalkColor = chalk.gray) {
-  return [getPrefix(chalkColor), ...args];
+function withPrefix(args, color = tc.gray) {
+  return [getPrefix(color), ...args];
 }
 
 function log(...args) {
@@ -110,13 +110,13 @@ log.error = function error(...args) {
   }
 
   respectProgressBars(() => {
-    consoleError(...withPrefixAndTextColor(args, chalk.red));
+    consoleError(...withPrefixAndTextColor(args, tc.red));
   });
 };
 
 log.nestedError = function(message) {
   respectProgressBars(() => {
-    consoleError(chalk.red(message));
+    consoleError(tc.red(message));
   });
 };
 
@@ -126,13 +126,13 @@ log.warn = function warn(...args) {
   }
 
   respectProgressBars(() => {
-    consoleWarn(...withPrefixAndTextColor(args, chalk.yellow));
+    consoleWarn(...withPrefixAndTextColor(args, tc.yellow));
   });
 };
 
 log.nestedWarn = function(message) {
   respectProgressBars(() => {
-    consoleWarn(chalk.yellow(message));
+    consoleWarn(tc.yellow(message));
   });
 };
 
@@ -156,7 +156,7 @@ log.raw = function(...args) {
   });
 };
 
-log.chalk = chalk;
+log.tc = tc;
 
 log.config = {
   raw: false,

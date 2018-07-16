@@ -3,7 +3,7 @@
  */
 
 import { Project, ProjectUtils, Versions } from 'xdl';
-import chalk from 'chalk';
+import tc from 'turbocolor';
 import fp from 'lodash/fp';
 import simpleSpinner from '@expo/simple-spinner';
 
@@ -238,7 +238,7 @@ ${buildStatus.id}
     log('Build started, it may take a few minutes to complete.');
 
     if (buildId) {
-      log(`You can monitor the build at\n\n ${chalk.underline(constructBuildLogsUrl(buildId))}\n`);
+      log(`You can monitor the build at\n\n ${tc.underline(constructBuildLogsUrl(buildId))}\n`);
     }
 
     if (this.options.wait) {
@@ -248,7 +248,7 @@ ${buildStatus.id}
       const artifactUrl = completedJob.artifactId
         ? constructArtifactUrl(completedJob.artifactId)
         : completedJob.artifacts.url;
-      log(`${chalk.green('Successfully built standalone app:')} ${chalk.underline(artifactUrl)}`);
+      log(`${tc.green('Successfully built standalone app:')} ${tc.underline(artifactUrl)}`);
     } else {
       log('Alternatively, run `exp build:status` to monitor it from the command line.');
     }
@@ -259,7 +259,7 @@ ${buildStatus.id}
     if (!isSupported) {
       const storeName = platform === 'ios' ? 'Apple App Store' : 'Google Play Store';
       log.error(
-        chalk.red(
+        tc.red(
           `Unsupported SDK version: our app builders don't have support for ${sdkVersion} version yet. Submitting the app to the ${storeName} may result in an unexpected behaviour`
         )
       );

@@ -12,7 +12,7 @@ import {
   UserSettings,
 } from 'xdl';
 
-import chalk from 'chalk';
+import tc from 'turbocolor';
 import opn from 'opn';
 import readline from 'readline';
 import wordwrap from 'wordwrap';
@@ -25,7 +25,7 @@ const CTRL_C = '\u0003';
 const CTRL_D = '\u0004';
 const CTRL_L = '\u000C';
 
-const { bold: b, italic: i, underline: u } = chalk;
+const { bold: b, italic: i, underline: u } = tc;
 
 const clearConsole = () => {
   process.stdout.write(process.platform === 'win32' ? '\x1Bc' : '\x1B[2J\x1B[3J\x1B[H');
@@ -221,9 +221,9 @@ export const startAsync = async projectDir => {
         const dev = !projectSettings.dev;
         await ProjectSettings.setAsync(projectDir, { dev, minify: !dev });
         log(
-          `Metro Bundler is now running in ${chalk.bold(
+          `Metro Bundler is now running in ${tc.bold(
             dev ? 'development' : 'production'
-          )}${chalk.reset(` mode.`)}
+          )}${tc.reset(` mode.`)}
 Please reload the project in the Expo app for the change to take effect.`
         );
         printHelp();

@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import tc from 'turbocolor';
 import fp from 'lodash/fp';
 
 import { Project, UrlUtils } from 'xdl';
@@ -36,7 +36,7 @@ async function action(projectDir, options) {
 
   urlOpts.printQRCode(url);
 
-  log('Your URL is\n\n' + chalk.underline(url) + '\n');
+  log('Your URL is\n\n' + tc.underline(url) + '\n');
   log.raw(url);
 
   await printRunInstructionsAsync();

@@ -10,7 +10,7 @@ if (semver.satisfies(ver, '>=6.0.0')) {
   require('../build/exp.js').run('expo');
 } else {
   console.log(
-    require('chalk').red(
+    require('turbocolor').red(
       'Node version ' + ver + ' is not supported, please use Node.js 6.0 or higher.'
     )
   );

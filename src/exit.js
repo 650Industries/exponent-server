@@ -1,6 +1,6 @@
 // @flow
 
-import chalk from 'chalk';
+import tc from 'turbocolor';
 import { Project } from 'xdl';
 
 export function installExitHooks(projectDir: string) {
@@ -17,9 +17,9 @@ export function installExitHooks(projectDir: string) {
   }
 
   process.on('SIGINT', () => {
-    console.log(chalk.blue('\nStopping packager...'));
+    console.log(tc.blue('\nStopping packager...'));
     Project.stopAsync(projectDir).then(() => {
-      console.log(chalk.green('Packager stopped.'));
+      console.log(tc.green('Packager stopped.'));
       process.exit();
     });
   });

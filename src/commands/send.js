@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import tc from 'turbocolor';
 
 import { UserSettings, UrlUtils } from 'xdl';
 
@@ -12,7 +12,7 @@ async function action(projectDir, options) {
 
   let url = await UrlUtils.constructManifestUrlAsync(projectDir);
 
-  log('Your URL is\n\n' + chalk.underline(url) + '\n');
+  log('Your URL is\n\n' + tc.underline(url) + '\n');
   log.raw(url);
 
   let shouldQuit = false;
