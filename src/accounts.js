@@ -2,7 +2,7 @@
  * @flow
  */
 
-import chalk from 'chalk';
+import tc from 'turbocolor';
 
 import { User as UserManager } from 'xdl';
 import CommandError from './CommandError';
@@ -22,7 +22,7 @@ export async function loginOrRegisterIfLoggedOut() {
     return;
   }
 
-  console.log(chalk.yellow('\nAn Expo user account is required to proceed.\n'));
+  console.log(tc.yellow('\nAn Expo user account is required to proceed.\n'));
 
   const questions = [
     {
@@ -65,7 +65,7 @@ export async function login(options: CommandOptions) {
         {
           type: 'confirm',
           name: 'action',
-          message: `You are already logged in as ${chalk.green(
+          message: `You are already logged in as ${tc.green(
             user.username
           )}. Log in as new user?`,
         },
@@ -128,7 +128,7 @@ async function _usernamePasswordAuth(username?: string, password?: string): Prom
   let user = await UserManager.loginAsync('user-pass', data);
 
   if (user) {
-    console.log(`\nSuccess. You are now logged in as ${chalk.green(user.username)}.`);
+    console.log(`\nSuccess. You are now logged in as ${tc.green(user.username)}.`);
     return user;
   } else {
     throw new Error('Unexpected Error: No user returned from the API');

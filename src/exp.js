@@ -5,7 +5,7 @@
 import ProgressBar from 'progress';
 import _ from 'lodash';
 import bunyan from '@expo/bunyan';
-import chalk from 'chalk';
+import tc from 'turbocolor';
 import glob from 'glob';
 import fs from 'fs';
 import path from 'path';
@@ -77,16 +77,16 @@ Command.prototype.asyncAction = function(asyncFn, skipUpdateCheck) {
       if (err._isCommandError) {
         log.error(err.message);
       } else if (err._isApiError) {
-        log.error(chalk.red(err.message));
+        log.error(tc.red(err.message));
       } else if (err.isXDLError) {
         log.error(err.message);
       } else {
         log.error(err.message);
         // TODO: Is there a better way to do this? EXPO_DEBUG needs to be set to view the stack trace
         if (process.env.EXPO_DEBUG) {
-          log.error(chalk.gray(err.stack));
+          log.error(tc.gray(err.stack));
         } else {
-          log.error(chalk.grey('Set EXPO_DEBUG=true in your env to view the stack trace.'));
+          log.error(tc.gray('Set EXPO_DEBUG=true in your env to view the stack trace.'));
         }
       }
 
@@ -150,7 +150,7 @@ Command.prototype.asyncActionProjectDir = function(asyncFn, skipProjectValidatio
 
       let { message, stack } = traceInfo;
       log.addNewLineIfNone();
-      logFn(chalk.bold(message));
+      logFn(tc.bold(message));
 
       const isLibraryFrame = line => {
         return line.startsWith('node_modules');
@@ -247,9 +247,9 @@ Command.prototype.asyncActionProjectDir = function(asyncFn, skipProjectValidatio
           bar = null;
 
           if (err) {
-            log(chalk.red('Failed building JavaScript bundle.'));
+            log(tc.red('Failed building JavaScript bundle.'));
           } else {
-            log(chalk.green(`Finished building JavaScript bundle in ${endTime - startTime}ms.`));
+            log(tc.green(`Finished building JavaScript bundle in ${endTime - startTime}ms.`));
           }
         }
       },
@@ -420,7 +420,7 @@ async function checkForUpdateAsync() {
       message = `There is a new version of ${packageJSON.name} available (${latest}).
 You are currently using ${packageJSON.name} ${current}
 Run \`npm install -g ${packageJSON.name}\` to get the latest version`;
-      log.nestedWarn(chalk.green(message));
+      log.nestedWarn(tc.green(message));
       break;
 
     case 'ahead-of-published':

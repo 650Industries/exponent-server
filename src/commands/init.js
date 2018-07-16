@@ -1,5 +1,5 @@
 import fs from 'fs';
-import chalk from 'chalk';
+import tc from 'turbocolor';
 import ProgressBar from 'progress';
 import { Api, Exp, Logger, NotificationCode, MessageCode } from 'xdl';
 import wordwrap from 'wordwrap';
@@ -49,7 +49,7 @@ async function action(projectDir, options) {
       message: 'Choose a template:',
       choices: versions.templatesv2.map(template => ({
         value: template.id,
-        name: chalk.bold(template.id) + '\n' + wrap(template.description),
+        name: tc.bold(template.id) + '\n' + wrap(template.description),
         short: template.id,
       })),
     }));

@@ -2,7 +2,7 @@
  * @flow
  */
 
-import chalk from 'chalk';
+import tc from 'turbocolor';
 import fs from 'fs';
 import path from 'path';
 import { Credentials, Exp } from 'xdl';
@@ -87,8 +87,8 @@ export default (program: any) => {
         }
         log(`Save these important values as well:
 
-Distribution p12 password: ${chalk.bold(certPassword)}
-Push p12 password:         ${chalk.bold(pushPassword)}
+Distribution p12 password: ${tc.bold(certPassword)}
+Push p12 password:         ${tc.bold(pushPassword)}
 `);
       } catch (e) {
         throw new Error('Unable to fetch credentials for this project. Are you sure they exist?');

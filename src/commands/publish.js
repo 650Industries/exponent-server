@@ -2,7 +2,7 @@
  * @flow
  */
 
-import chalk from 'chalk';
+import tc from 'turbocolor';
 import simpleSpinner from '@expo/simple-spinner';
 
 import { Project } from 'xdl';
@@ -63,7 +63,7 @@ export async function action(projectDir: string, options: Options = {}) {
   }
 
   log('Published');
-  log('Your URL is\n\n' + chalk.underline(url) + '\n');
+  log('Your URL is\n\n' + tc.underline(url) + '\n');
   log.raw(url);
 
   if (recipient) {

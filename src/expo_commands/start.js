@@ -4,7 +4,7 @@
 
 import { DevToolsServer } from '@expo/dev-tools';
 import { ProjectUtils, ProjectSettings, Project, UserSettings, UrlUtils } from 'xdl';
-import chalk from 'chalk';
+import tc from 'turbocolor';
 import opn from 'opn';
 import path from 'path';
 
@@ -27,7 +27,7 @@ async function action(projectDir, options) {
 
   await urlOpts.optsAsync(projectDir, options);
 
-  log(chalk.gray('Starting project at', projectDir));
+  log(tc.gray(`Starting project at ${projectDir}`));
 
   let root = path.resolve(projectDir);
   let startOpts = {};
@@ -53,14 +53,14 @@ async function action(projectDir, options) {
 
   const { exp } = await ProjectUtils.readConfigJsonAsync(projectDir);
 
-  log(`Expo DevTools is running at ${chalk.underline(devToolsUrl)}`);
+  log(`Expo DevTools is running at ${tc.underline(devToolsUrl)}`);
   if (!options.nonInteractive && !exp.isDetached) {
     if (await UserSettings.getAsync('openDevToolsAtStartup', true)) {
-      log(`Opening DevTools in the browser... (press ${chalk.bold`shift-d`} to disable)`);
+      log(`Opening DevTools in the browser... (press ${tc.bold('shift-d')} to disable)`);
       opn(devToolsUrl);
     } else {
       log(
-        `Press ${chalk.bold`d`} to open DevTools now, or ${chalk.bold`shift-d`} to always open it automatically.`
+        `Press ${tc.bold('d')} to open DevTools now, or ${tc.bold('shift-d')} to always open it automatically.`
       );
     }
     await TerminalUI.startAsync(projectDir);
@@ -69,10 +69,10 @@ async function action(projectDir, options) {
       log.newLine();
       urlOpts.printQRCode(url);
     }
-    log(`Your app is running at ${chalk.underline(url)}`);
+    log(`Your app is running at ${tc.underline(url)}`);
   }
 
-  log.nested(chalk.green('Logs for your project will appear below. Press Ctrl+C to exit.'));
+  log.nested(tc.green('Logs for your project will appear below. Press Ctrl+C to exit.'));
 }
 
 export default (program: any) => {

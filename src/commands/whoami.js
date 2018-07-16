@@ -5,12 +5,12 @@
 import { User } from 'xdl';
 
 import log from '../log';
-import chalk from 'chalk';
+import tc from 'turbocolor';
 
 async function action(options) {
   const user = await User.ensureLoggedInAsync();
   if (user && user.username) {
-    log(`Logged in as ${chalk.green(user.username)}`);
+    log(`Logged in as ${tc.green(user.username)}`);
     log.raw(user.username);
     return user;
   } else {

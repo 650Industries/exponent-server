@@ -1,6 +1,6 @@
 // @flow
 
-import chalk from 'chalk';
+import tc from 'turbocolor';
 import fse from 'fs-extra';
 import matchRequire from 'match-require';
 import path from 'path';
@@ -18,17 +18,17 @@ export async function ejectAsync(projectRoot: string, options) {
 
   let expoSdkWarning;
   if (usingExpo) {
-    expoSdkWarning = `${chalk.bold(
+    expoSdkWarning = `${tc.bold(
       'Warning!'
     )} We found at least one file where your project imports the Expo SDK:
 `;
 
     for (let filename of filesWithExpo) {
-      expoSdkWarning += `  ${chalk.cyan(filename)}\n`;
+      expoSdkWarning += `  ${tc.cyan(filename)}\n`;
     }
 
     expoSdkWarning += `
-${chalk.yellow.bold(
+${tc.yellow.bold(
       'If you choose the "plain" React Native option below, these imports will stop working.'
     )}`;
   } else {
@@ -40,8 +40,8 @@ We didn't find any uses of the Expo SDK in your project, so you should be fine t
   log(
     `
 ${expoSdkWarning}
-We ${chalk.italic('strongly')} recommend that you read this document before you proceed:
-  ${chalk.cyan(
+We ${tc.italic('strongly')} recommend that you read this document before you proceed:
+  ${tc.cyan(
     'https://github.com/react-community/create-react-native-app/blob/master/EJECTING.md'
   )}
 Ejecting is permanent! Please be careful with your selection.
@@ -52,7 +52,7 @@ Ejecting is permanent! Please be careful with your selection.
 
   if (usingExpo) {
     reactNativeOptionMessage =
-      chalk.italic(
+      tc.italic(
         "(WARNING: See above message for why this option may break your project's build)\n  "
       ) + reactNativeOptionMessage;
   }
@@ -130,7 +130,7 @@ Ejecting is permanent! Please be careful with your selection.
     log('Writing app.json...');
     // write the updated app.json file
     await fse.writeFile(path.resolve('app.json'), JSON.stringify(appJson, null, 2));
-    log(chalk.green('Wrote to app.json, please update it manually in the future.'));
+    log(tc.green('Wrote to app.json, please update it manually in the future.'));
     const ejectCommand = 'node';
     const ejectArgs = [
       path.resolve('node_modules', 'react-native', 'local-cli', 'cli.js'),
@@ -142,8 +142,8 @@ Ejecting is permanent! Please be careful with your selection.
     });
 
     if (status !== 0) {
-      log(chalk.red(`Eject failed with exit code ${status}, see above output for any issues.`));
-      log(chalk.yellow('You may want to delete the `ios` and/or `android` directories.'));
+      log(tc.red(`Eject failed with exit code ${status}, see above output for any issues.`));
+      log(tc.yellow('You may want to delete the `ios` and/or `android` directories.'));
       process.exit(1);
     } else {
       log('Successfully copied template native code.');
@@ -172,7 +172,7 @@ Ejecting is permanent! Please be careful with your selection.
           await fse.writeFile(projectBabelPath, JSON.stringify(babelRcJson, null, 2));
           newDevDependencies.push('babel-preset-react-native-stage-0');
           log(
-            chalk.green(
+            tc.green(
               `Babel preset changed to \`babel-preset-react-native-stage-0/decorator-support\`.`
             )
           );
@@ -180,13 +180,13 @@ Ejecting is permanent! Please be careful with your selection.
       }
     } catch (e) {
       log(
-        chalk.yellow(
+        tc.yellow(
           `We had an issue preparing your .babelrc for ejection.
 If you have a .babelrc in your project, make sure to change the preset
 from \`babel-preset-expo\` to \`babel-preset-react-native-stage-0/decorator-support\`.`
         )
       );
-      log(chalk.red(e));
+      log(tc.red(e));
     }
 
     delete pkgJson.main;
@@ -211,7 +211,7 @@ from \`babel-preset-expo\` to \`babel-preset-react-native-stage-0/decorator-supp
       newDevDependencies.push('jest-react-native');
     } else if (pkgJson.jest) {
       log(
-        `${chalk.bold(
+        `${tc.bold(
           'Warning'
         )}: it looks like you've changed the Jest preset from jest-expo to ${pkgJson.jest
           .preset}. We recommend you make sure this Jest preset is compatible with ejected apps.`
@@ -225,7 +225,7 @@ from \`babel-preset-expo\` to \`babel-preset-react-native-stage-0/decorator-supp
 
     await fse.writeFile(path.resolve('package.json'), JSON.stringify(pkgJson, null, 2));
 
-    log(chalk.green('Your package.json is up to date!'));
+    log(tc.green('Your package.json is up to date!'));
 
     // Starting from react-native 0.49.x (SDK 22), react-native eject template includes this out of the box.
     if (!Versions.gteSdkVersion(exp, '22.0.0')) {
@@ -235,7 +235,7 @@ import App from './App';
 AppRegistry.registerComponent('${appJson.name}', () => App);
 `;
       await fse.writeFile(path.resolve('index.js'), lolThatsSomeComplexCode);
-      log(chalk.green('Added new entry points!'));
+      log(tc.green('Added new entry points!'));
     }
 
     log(`
@@ -276,9 +276,9 @@ Android Studio to build the native code for your project.`);
   }
 
   log(
-    `${chalk.green('Ejected successfully!')}
+    `${tc.green('Ejected successfully!')}
 Please consider letting us know why you ejected in this survey:
-  ${chalk.cyan('https://goo.gl/forms/iD6pl218r7fn9N0d2')}`
+  ${tc.cyan('https://goo.gl/forms/iD6pl218r7fn9N0d2')}`
   );
 }
 

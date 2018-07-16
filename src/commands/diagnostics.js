@@ -1,6 +1,6 @@
 import { Diagnostics } from 'xdl';
 import { print as envinfoPrint } from 'envinfo';
-import chalk from 'chalk';
+import tc from 'turbocolor';
 
 import simpleSpinner from '@expo/simple-spinner';
 
@@ -12,7 +12,7 @@ async function action(options) {
 
   envinfoPrint({ packages: ['expo', 'react', 'react-native'] });
 
-  console.log(chalk.underline('Diagnostics report:'));
+  console.log(tc.underline('Diagnostics report:'));
   simpleSpinner.start();
   const { url } = await Diagnostics.getDeviceInfoAsync({
     uploadLogs: true,
